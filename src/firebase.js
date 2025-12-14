@@ -2,14 +2,14 @@ import { initializeApp } from "firebase/app";
 import { getDatabase } from "firebase/database";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyBSPwtIAPTK9JgGlLqXzjhz20e_zAQ_OJE",
-    authDomain: "teamsync-7f05a.firebaseapp.com",
-    databaseURL: "https://teamsync-7f05a-default-rtdb.firebaseio.com",
-    projectId: "teamsync-7f05a",
-    storageBucket: "teamsync-7f05a.firebasestorage.app",
-    messagingSenderId: "318853385772",
-    appId: "1:318853385772:web:3f733dabb03e164e0d0b89",
-    measurementId: "G-HSMZB48K0S"
+    apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+    databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL,
+    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+    appId: import.meta.env.VITE_FIREBASE_APP_ID,
+    measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
 // Initialize Firebase

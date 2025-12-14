@@ -2,14 +2,14 @@ import { initializeApp } from "firebase/app";
 import { getDatabase } from "firebase/database";
 
 const firebaseConfig = {
-    // PLACEHOLDER: Replace with your Firebase config object
-    // apiKey: "AIzaSy...",
-    // authDomain: "project-id.firebaseapp.com",
-    // databaseURL: "https://project-id-default-rtdb.firebaseio.com",
-    // projectId: "project-id",
-    // storageBucket: "project-id.appspot.com",
-    // messagingSenderId: "...",
-    // appId: "..."
+    apiKey: "AIzaSyBSPwtIAPTK9JgGlLqXzjhz20e_zAQ_OJE",
+    authDomain: "teamsync-7f05a.firebaseapp.com",
+    databaseURL: "https://teamsync-7f05a-default-rtdb.firebaseio.com",
+    projectId: "teamsync-7f05a",
+    storageBucket: "teamsync-7f05a.firebasestorage.app",
+    messagingSenderId: "318853385772",
+    appId: "1:318853385772:web:3f733dabb03e164e0d0b89",
+    measurementId: "G-HSMZB48K0S"
 };
 
 // Initialize Firebase

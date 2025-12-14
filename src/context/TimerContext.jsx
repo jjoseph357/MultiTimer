@@ -15,6 +15,10 @@ export const TimerProvider = ({ children }) => {
         const saved = localStorage.getItem('alertPrefs');
         return saved ? JSON.parse(saved) : [];
     });
+    const [masterVolume, setMasterVolume] = useState(() => {
+        const saved = localStorage.getItem('masterVolume');
+        return saved ? parseFloat(saved) : 0.5;
+    });
 
     // Listen to Firebase updates
     useEffect(() => {
@@ -38,6 +42,10 @@ export const TimerProvider = ({ children }) => {
     useEffect(() => {
         localStorage.setItem('alertPrefs', JSON.stringify(timersToAlert));
     }, [timersToAlert]);
+
+    useEffect(() => {
+        localStorage.setItem('masterVolume', masterVolume.toString());
+    }, [masterVolume]);
 
     const addTimer = async (name, type, durationMinutes) => {
         const newTimer = {
@@ -144,6 +152,8 @@ export const TimerProvider = ({ children }) => {
             timers,
             loading,
             timersToAlert,
+            masterVolume,
+            setMasterVolume,
             addTimer,
             toggleTimer,
             deleteTimer,

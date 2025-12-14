@@ -4,29 +4,47 @@ import { update, ref } from 'firebase/database';
 import { db } from '../firebase';
 
 const AudioManager = () => {
-    const { timers, timersToAlert } = useTimers();
+    const { timers, timersToAlert, masterVolume } = useTimers();
     const audioCtxRef = useRef(null);
 
-    const playAlertSound = () => {
+    const playPleasantChime = () => {
         if (!audioCtxRef.current) {
             audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
         }
         const ctx = audioCtxRef.current;
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
+        const now = ctx.currentTime;
 
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(440, ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.1);
+        // Master Gain for Volume Control
+        const masterGain = ctx.createGain();
+        masterGain.gain.setValueAtTime(masterVolume, now);
+        masterGain.connect(ctx.destination);
 
-        gain.gain.setValueAtTime(0.5, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+        // Create a nice chord (C Major Major 7th ish: C5, E5, G5, B5)
+        // Frequencies: 523.25, 659.25, 783.99, 987.77
+        const frequencies = [523.25, 659.25, 783.99, 987.77];
 
-        osc.connect(gain);
-        gain.connect(ctx.destination);
+        frequencies.forEach((freq, index) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
 
-        osc.start();
-        osc.stop(ctx.currentTime + 0.5);
+            // Use triangle wave for a softer, bell-like tone
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq, now);
+
+            // Stagger entries slightly for a strummed feel
+            const startTime = now + (index * 0.05);
+
+            // Envelope: Attack, Decay, Sustain, Release
+            gain.gain.setValueAtTime(0, startTime);
+            gain.gain.linearRampToValueAtTime(0.3, startTime + 0.05); // Attack
+            gain.gain.exponentialRampToValueAtTime(0.001, startTime + 2.0); // Long decay
+
+            osc.connect(gain);
+            gain.connect(masterGain);
+
+            osc.start(startTime);
+            osc.stop(startTime + 2.5);
+        });
     };
 
     useEffect(() => {
@@ -38,19 +56,13 @@ const AudioManager = () => {
                     const timeLeft = timer.expiryTimestamp - now;
 
                     if (timeLeft <= 0) {
-                        // 1. Play sound if monitored
+                        // 1. Play sound
                         if (timersToAlert.includes(id)) {
-                            playAlertSound();
+                            playPleasantChime();
                         }
 
-                        // 2. Mark as completed (idempotent, anyone can do this)
-                        // We only want to trigger this once.
-                        // To prevent spamming Firebase, maybe we only do it if timeLeft is "freshly" zero (e.g. between 0 and -1000)
-                        // Or rely on the status change. 
-                        // Ideally we just update status to 'completed'.
-
+                        // 2. Mark as completed
                         if (db) {
-                            // To avoid race conditions, slightly risky, but acceptable for this app
                             update(ref(db, `timers/${id}`), {
                                 status: 'completed',
                                 remainingSeconds: 0,
@@ -63,9 +75,9 @@ const AudioManager = () => {
         }, 1000);
 
         return () => clearInterval(checkInterval);
-    }, [timers, timersToAlert]);
+    }, [timers, timersToAlert, masterVolume]);
 
-    return null; // Invisible component
+    return null;
 };
 
 export default AudioManager;

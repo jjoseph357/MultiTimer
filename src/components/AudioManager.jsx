@@ -59,6 +59,14 @@ const AudioManager = () => {
                         // 1. Play sound
                         if (timersToAlert.includes(id)) {
                             playPleasantChime();
+
+                            // Send System Notification
+                            if (Notification.permission === 'granted') {
+                                new Notification(`Timer Done: ${timer.name}`, {
+                                    body: "Your timer has finished!",
+                                    icon: '/favicon.png'
+                                });
+                            }
                         }
 
                         // 2. Mark as completed

@@ -3,12 +3,18 @@ import { TimerProvider, useTimers } from './context/TimerContext';
 import TimerList from './components/TimerList';
 import AddTimerModal from './components/AddTimerModal';
 import AudioManager from './components/AudioManager';
-import { Plus, Users, Volume2 } from 'lucide-react';
+import { Plus, Users, Volume2, Bell, BellOff } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 function AppContent() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const { masterVolume, setMasterVolume } = useTimers();
+    const [notificationPermission, setNotificationPermission] = useState(Notification.permission);
+
+    const requestNotificationPermission = async () => {
+        const permission = await Notification.requestPermission();
+        setNotificationPermission(permission);
+    };
 
     return (
         <div className="min-h-screen p-4 md:p-8 relative">
@@ -42,6 +48,17 @@ function AppContent() {
                             className="w-24 accent-cyber-neonBlue h-1 bg-white/20 rounded-lg appearance-none cursor-pointer"
                         />
                     </div>
+
+                    {/* Notification Permission Button */}
+                    {notificationPermission !== 'granted' && (
+                        <button
+                            onClick={requestNotificationPermission}
+                            className="p-3 rounded-xl bg-white/5 hover:bg-white/10 text-white transition-all border border-white/10"
+                            title="Enable Notifications for background alerts"
+                        >
+                            <BellOff size={20} />
+                        </button>
+                    )}
 
                     <motion.button
                         whileHover={{ scale: 1.05 }}

@@ -7,11 +7,36 @@ const AudioManager = () => {
     const { timers, timersToAlert, masterVolume } = useTimers();
     const audioCtxRef = useRef(null);
 
+    // Expose unlock function to be called on user interaction
+    useEffect(() => {
+        const unlockAudio = () => {
+            if (audioCtxRef.current && audioCtxRef.current.state === 'suspended') {
+                audioCtxRef.current.resume();
+            } else if (!audioCtxRef.current) {
+                audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        };
+
+        window.addEventListener('click', unlockAudio);
+        window.addEventListener('touchstart', unlockAudio);
+
+        return () => {
+            window.removeEventListener('click', unlockAudio);
+            window.removeEventListener('touchstart', unlockAudio);
+        };
+    }, []);
+
     const playPleasantChime = () => {
         if (!audioCtxRef.current) {
             audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
         }
         const ctx = audioCtxRef.current;
+
+        // Ensure context is running (iOS fix)
+        if (ctx.state === 'suspended') {
+            ctx.resume();
+        }
+
         const now = ctx.currentTime;
 
         // Master Gain for Volume Control

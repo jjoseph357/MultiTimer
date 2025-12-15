@@ -6,17 +6,20 @@ import { useTimers } from '../context/TimerContext';
 const AddTimerModal = ({ isOpen, onClose }) => {
     const { addTimer } = useTimers();
     const [name, setName] = useState('');
-    const [duration, setDuration] = useState(25);
+    const [minutes, setMinutes] = useState(25);
+    const [seconds, setSeconds] = useState(0);
     const [type, setType] = useState('work'); // 'work' | 'break'
 
     const handleSubmit = (e) => {
         e.preventDefault();
         if (!name.trim()) return;
 
-        addTimer(name, type, parseInt(duration));
+        const totalSeconds = (parseInt(minutes) || 0) * 60 + (parseInt(seconds) || 0);
+        if (totalSeconds <= 0) return;
+
+        addTimer(name, type, totalSeconds);
         setName('');
-        // Keep last duration/type or reset? Let's keep for convenience or reset?
-        // Resetting seems cleaner for multi-user
+        // Keep last duration settings?
         onClose();
     };
 
@@ -52,15 +55,28 @@ const AddTimerModal = ({ isOpen, onClose }) => {
                             />
                         </div>
 
-                        <div>
-                            <label className="block text-sm text-gray-400 mb-2">Duration (minutes)</label>
-                            <input
-                                type="number"
-                                value={duration}
-                                onChange={(e) => setDuration(e.target.value)}
-                                min="1"
-                                className="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-cyber-neonBlue transition-colors"
-                            />
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm text-gray-400 mb-2">Minutes</label>
+                                <input
+                                    type="number"
+                                    value={minutes}
+                                    onChange={(e) => setMinutes(Math.max(0, parseInt(e.target.value) || 0))}
+                                    min="0"
+                                    className="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-cyber-neonBlue transition-colors"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm text-gray-400 mb-2">Seconds</label>
+                                <input
+                                    type="number"
+                                    value={seconds}
+                                    onChange={(e) => setSeconds(Math.max(0, parseInt(e.target.value) || 0))}
+                                    min="0"
+                                    max="59"
+                                    className="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-cyber-neonBlue transition-colors"
+                                />
+                            </div>
                         </div>
 
                         <div>
@@ -70,8 +86,8 @@ const AddTimerModal = ({ isOpen, onClose }) => {
                                     type="button"
                                     onClick={() => setType('work')}
                                     className={`flex-1 p-3 rounded-lg flex items-center justify-center gap-2 transition-all ${type === 'work'
-                                            ? 'bg-cyber-neonBlue/20 border-cyber-neonBlue text-cyber-neonBlue shadow-neon-blue'
-                                            : 'bg-black/20 border-white/10 text-gray-400'
+                                        ? 'bg-cyber-neonBlue/20 border-cyber-neonBlue text-cyber-neonBlue shadow-neon-blue'
+                                        : 'bg-black/20 border-white/10 text-gray-400'
                                         } border`}
                                 >
                                     <Clock size={18} /> Work
@@ -80,8 +96,8 @@ const AddTimerModal = ({ isOpen, onClose }) => {
                                     type="button"
                                     onClick={() => setType('break')}
                                     className={`flex-1 p-3 rounded-lg flex items-center justify-center gap-2 transition-all ${type === 'break'
-                                            ? 'bg-cyber-neonPink/20 border-cyber-neonPink text-cyber-neonPink shadow-neon-pink'
-                                            : 'bg-black/20 border-white/10 text-gray-400'
+                                        ? 'bg-cyber-neonPink/20 border-cyber-neonPink text-cyber-neonPink shadow-neon-pink'
+                                        : 'bg-black/20 border-white/10 text-gray-400'
                                         } border`}
                                 >
                                     <Coffee size={18} /> Break

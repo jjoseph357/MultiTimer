@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { db } from '../firebase';
-import { ref, onValue, push, update, remove } from 'firebase/database';
+import { ref, onValue, push, update, remove, serverTimestamp } from 'firebase/database';
 import { differenceInSeconds } from 'date-fns';
 
 const TimerContext = createContext();
@@ -47,13 +47,13 @@ export const TimerProvider = ({ children }) => {
         localStorage.setItem('masterVolume', masterVolume.toString());
     }, [masterVolume]);
 
-    const addTimer = async (name, type, durationMinutes) => {
+    const addTimer = async (name, type, durationSeconds) => {
         const newTimer = {
             name,
             type, // 'work' | 'break'
-            durationMinutes,
+            durationSeconds,
             status: 'paused',
-            remainingSeconds: durationMinutes * 60,
+            remainingSeconds: durationSeconds,
             expiryTimestamp: null,
             createdAt: Date.now(),
             createdBy: 'user_' + Math.floor(Math.random() * 10000) // Simple anonymous ID
@@ -93,6 +93,9 @@ export const TimerProvider = ({ children }) => {
         } else {
             // Start/Resume
             const now = Date.now();
+            // We use Date.now() here, assuming clients are reasonably synced. 
+            // Ideally we'd use a server time offset, but Date.now() + remaining is standard.
+            // The key is that once SET, expiryTimestamp becomes the source of truth for everyone.
             const expiry = now + (timer.remainingSeconds * 1000);
 
             const updates = {
@@ -126,7 +129,7 @@ export const TimerProvider = ({ children }) => {
 
         const updates = {
             status: 'paused',
-            remainingSeconds: timer.durationMinutes * 60,
+            remainingSeconds: timer.durationSeconds || (timer.durationMinutes * 60),
             expiryTimestamp: null
         };
 

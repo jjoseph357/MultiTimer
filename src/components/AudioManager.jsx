@@ -61,11 +61,15 @@ const AudioManager = () => {
                             playPleasantChime();
 
                             // Send System Notification
-                            if (Notification.permission === 'granted') {
-                                new Notification(`Timer Done: ${timer.name}`, {
-                                    body: "Your timer has finished!",
-                                    icon: '/favicon.png'
-                                });
+                            if ('Notification' in window && Notification.permission === 'granted') {
+                                try {
+                                    new Notification(`Timer Done: ${timer.name}`, {
+                                        body: "Your timer has finished!",
+                                        icon: '/favicon.png'
+                                    });
+                                } catch (e) {
+                                    console.log('Notification failed:', e);
+                                }
                             }
                         }
 

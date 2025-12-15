@@ -9,9 +9,15 @@ import { motion } from 'framer-motion';
 function AppContent() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const { masterVolume, setMasterVolume } = useTimers();
-    const [notificationPermission, setNotificationPermission] = useState(Notification.permission);
+    const [notificationPermission, setNotificationPermission] = useState(() => {
+        if (typeof window !== 'undefined' && 'Notification' in window) {
+            return Notification.permission;
+        }
+        return 'denied';
+    });
 
     const requestNotificationPermission = async () => {
+        if (!('Notification' in window)) return;
         const permission = await Notification.requestPermission();
         setNotificationPermission(permission);
     };

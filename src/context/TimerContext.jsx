@@ -28,6 +28,14 @@ export const TimerProvider = ({ children }) => {
             return;
         }
 
+        // 1. Sync Time Offset
+        const offsetRef = ref(db, '.info/serverTimeOffset');
+        const unsubscribeOffset = onValue(offsetRef, (snap) => {
+            const offset = snap.val();
+            localStorage.setItem('serverTimeOffset', offset);
+        });
+
+        // 2. Listen to Timers
         const timersRef = ref(db, 'timers');
         const unsubscribe = onValue(timersRef, (snapshot) => {
             const data = snapshot.val();
@@ -35,7 +43,10 @@ export const TimerProvider = ({ children }) => {
             setLoading(false);
         });
 
-        return () => unsubscribe();
+        return () => {
+            unsubscribe();
+            unsubscribeOffset();
+        };
     }, []);
 
     // Save alert prefs
@@ -75,7 +86,8 @@ export const TimerProvider = ({ children }) => {
 
         if (timer.status === 'running') {
             // Pause
-            const now = Date.now();
+            const offset = parseInt(localStorage.getItem('serverTimeOffset') || '0');
+            const now = Date.now() + offset;
             const remaining = Math.max(0, differenceInSeconds(timer.expiryTimestamp, now));
 
             const updates = {
@@ -92,10 +104,10 @@ export const TimerProvider = ({ children }) => {
 
         } else {
             // Start/Resume
-            const now = Date.now();
-            // We use Date.now() here, assuming clients are reasonably synced. 
-            // Ideally we'd use a server time offset, but Date.now() + remaining is standard.
-            // The key is that once SET, expiryTimestamp becomes the source of truth for everyone.
+            const offset = parseInt(localStorage.getItem('serverTimeOffset') || '0');
+            const now = Date.now() + offset;
+            // Now 'now' is "Estimated Server Time"
+
             const expiry = now + (timer.remainingSeconds * 1000);
 
             const updates = {

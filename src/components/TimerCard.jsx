@@ -11,7 +11,9 @@ const TimerCard = ({ id, timer }) => {
     useEffect(() => {
         const updateTime = () => {
             if (timer.status === 'running' && timer.expiryTimestamp) {
-                const remaining = Math.max(0, Math.ceil((timer.expiryTimestamp - Date.now()) / 1000));
+                const offset = parseInt(localStorage.getItem('serverTimeOffset') || '0');
+                const now = Date.now() + offset;
+                const remaining = Math.max(0, Math.ceil((timer.expiryTimestamp - now) / 1000));
                 setTimeLeft(remaining);
             } else {
                 setTimeLeft(Math.floor(timer.remainingSeconds));
